@@ -1,4 +1,4 @@
-name: Developer Build and Push Docker Images
+name: Builtin Embedding Build and Push Docker Images
 
 on:
   push:
