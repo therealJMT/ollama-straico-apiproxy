@@ -8,6 +8,7 @@ from os import environ
 
 from app import app, logging, log_level
 from api_endpoints import lm_studio
+from api_endpoints import lm_studio_tts
 from api_endpoints import ollama
 
 EMBEDDING_ENABLED = environ.get("EMBEDDING_ENABLED", "false").lower().strip()
