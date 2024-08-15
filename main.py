@@ -17,8 +17,19 @@ else:
     EMBEDDING_ENABLED = True
 
 if EMBEDDING_ENABLED:
-    from api_endpoints import lm_studion_embedding
+    from api_endpoints import lm_studio_embedding
     from api_endpoints import ollama_embedding
+
+
+
+TRANSCRIPTION_ENABLED = environ.get("TRANSCRIPTION_ENABLED", "false").lower().strip()
+if TRANSCRIPTION_ENABLED in ["0", "false", "no"]:
+    TRANSCRIPTION_ENABLED = False
+else:
+    TRANSCRIPTION_ENABLED = True
+
+if TRANSCRIPTION_ENABLED:
+    from api_endpoints import lm_studio_transcription
 
 import uvicorn
 
