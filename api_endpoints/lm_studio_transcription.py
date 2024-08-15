@@ -1,48 +1,30 @@
-import json
 import logging
-
-from fastapi import Request
+import whisper
+import pathlib
+from fastapi import UploadFile, Form, File
 from fastapi.responses import JSONResponse
 from app import app
-
-from backend.embedding import get_embedding_model
+from typing import Optional
+import tempfile
 
 from os import environ
 
 logger = logging.getLogger(__name__)
 
-default_embedding_model = environ.get(
-    "DEFAULT_EMBEDDING_MODEL", "nomic-ai/nomic-embed-text-v1.5"
-)
+default_transcription_model = environ.get("DEFAULT_TRANSCRIPTION_MODEL", "base")
 
 
 @app.post("/v1/audio/transcriptions")
-async def lm_studio_transcriptions(request: Request):
-    try:
-        post_json_data = await request.json()
-    except:
-        post_json_data = json.loads((await request.body()).decode())
-    logger.debug(post_json_data)
-    embedding_model = post_json_data.get("model", default_embedding_model)
+async def lm_studio_transcriptions(
+    file: UploadFile = File(...), model: Optional[str] = Form(None)
+):
+    contents = await file.read()
+    model_name = default_transcription_model
+    model = whisper.load_model(model_name)
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        file = pathlib.Path(tmpdirname) / "audio.mp3"
+        with file.open("wb") as writer:
+            writer.write(contents)
+        result = model.transcribe(str(file))
 
-    input_text = post_json_data["input"]
-    if type(input_text) == str:
-        input_text = [
-            input_text,
-        ]
-    model = get_embedding_model(embedding_model)
-    embeddings = model.encode(input_text)
-    embedding_data = []
-    for index in range(embeddings.shape[0]):
-        embed = embeddings[index].tolist()
-        embedding_data.append(
-            {"object": "embedding", "embedding": embed, "index": index}
-        )
-    return JSONResponse(
-        content={
-            "object": "list",
-            "data": embedding_data,
-            "model": embedding_model,
-            "usage": {"prompt_tokens": 0, "total_tokens": 0},
-        }
-    )
+        return JSONResponse(content={"text": result["text"]})

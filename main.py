@@ -21,7 +21,6 @@ if EMBEDDING_ENABLED:
     from api_endpoints import ollama_embedding
 
 
-
 TRANSCRIPTION_ENABLED = environ.get("TRANSCRIPTION_ENABLED", "false").lower().strip()
 if TRANSCRIPTION_ENABLED in ["0", "false", "no"]:
     TRANSCRIPTION_ENABLED = False
