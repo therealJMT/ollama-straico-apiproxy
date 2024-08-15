@@ -4,12 +4,22 @@ try:
     load_dotenv()
 except:
     pass
+from os import environ
+
 from app import app, logging, log_level
 from api_endpoints import lm_studio
-
 from api_endpoints import ollama
 
-from os import environ
+EMBEDDING_ENABLED = environ.get("EMBEDDING_ENABLED", "false").lower().strip()
+if EMBEDDING_ENABLED in ["0", "false", "no"]:
+    EMBEDDING_ENABLED = False
+else:
+    EMBEDDING_ENABLED = True
+
+if EMBEDDING_ENABLED:
+    from api_endpoints import lm_studion_embedding
+    from api_endpoints import ollama_embedding
+
 import uvicorn
 
 if __name__ == "__main__":
