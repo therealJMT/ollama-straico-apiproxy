@@ -26,5 +26,4 @@ async def lm_studio_transcriptions(
         with file.open("wb") as writer:
             writer.write(contents)
         result = model.transcribe(str(file))
-
         return JSONResponse(content={"text": result["text"]})
