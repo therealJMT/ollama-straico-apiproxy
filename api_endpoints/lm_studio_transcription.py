@@ -21,6 +21,7 @@ async def lm_studio_transcriptions(
     contents = await file.read()
     model_name = default_transcription_model
     model = whisper.load_model(model_name)
+
     with tempfile.TemporaryDirectory() as tmpdirname:
         file = pathlib.Path(tmpdirname) / "audio.mp3"
         with file.open("wb") as writer:
