@@ -4,8 +4,9 @@ import logging
 from fastapi import Request
 from fastapi.responses import StreamingResponse
 from app import app
+from backend.straico_platform import tts, download_file
 
-import io
+from io import BytesIO
 from os import environ
 
 logger = logging.getLogger(__name__)
@@ -27,8 +28,10 @@ async def lm_studio_tts(request: Request):
     input_text = post_json_data["input"]
     voice = post_json_data["voice"]
 
-    sample_path = "/Users/jr/Documents/audio/How can we even hear gravitational waves.mp3"
-    with open(sample_path, "rb") as reader:
-        data = reader.read(-1)
-        stream = io.BytesIO(data)
-        return StreamingResponse(stream, media_type="application/octet-stream")
+    speech_url = await tts(input_text, model, voice)
+    if speech_url is None:
+        return
+
+    speech_blob = await download_file(speech_url)
+    stream = BytesIO(speech_blob)
+    return StreamingResponse(stream, media_type="application/octet-stream")

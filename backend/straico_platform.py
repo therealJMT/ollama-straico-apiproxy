@@ -11,11 +11,21 @@ async def tts(text, model="tts-1", voice="alloy"):
     cost = cost_per_model[model]
     cost *= word_count
     cost_str = str(int(cost * 100) / 100)
-    with AsyncClient() as session:
+
+    async with AsyncClient() as session:
         response = await session.post(
             "https://platform.straico.com/api/file/tts",
             headers={"x-access-token": STRAICO_PLATFORM_ACCESS_TOKEN},
             json={"text": text, "voice": voice, "quality": model, "coins": cost_str},
+            timeout=300,
         )
-        if response.status_code == 201 and response.json()["success"]:
+        response.raise_for_status()
+        if response.json()["success"]:
             return response.json()["url"]
+
+
+async def download_file(file_url):
+    async with AsyncClient() as session:
+        response = await session.get(file_url, timeout=300)
+        response.raise_for_status()
+        return response.content
