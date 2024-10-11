@@ -78,6 +78,15 @@ async def model_listing():
         model_id_mapping[model_name] = _id
     return model_id_mapping
 
+def parse_prompt_completion_response(response, model):
+    content = response["completion"]["choices"][-1]["message"]["content"]
+    response_id = response["completion"]["id"]
+    metadata = response["completion"]["usage"]
+    metadata["id"] = response_id
+    metadata["model"] = model
+    metadata["created"] = response["completion"]["created"]
+    return content, metadata
+
 
 async def prompt_completion(
     msg: str, images=None, model: str = "openai/gpt-3.5-turbo-0125", temperature:float = None, max_tokens:float = None
@@ -112,7 +121,7 @@ async def prompt_completion(
         async with aio_straico_client(timeout=TIMEOUT) as client:
             response = await client.prompt_completion(model, msg, **settings)
             logger.debug(f"response body: {response}")
-            return response["completion"]["choices"][-1]["message"]["content"]
+            return parse_prompt_completion_response(response, model)
     else:
         platform_model_map = await get_platform_model_mapping()
         if model.startswith("openai/"):

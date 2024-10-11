@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 MODEL_SIZE = 7365960935
 
 from .response.stream.completion_response import generate_ollama_stream, response_stream
-
+from .response.basic.completion_response import assist_response
 
 @app.post("/api/generate")
 async def ollamagenerate(request: Request):
@@ -110,7 +110,7 @@ Please only output plain json.
         messages = messages[0]["content"]
 
     request_msg = json.dumps(messages, indent=True)
-    response = await prompt_completion(request_msg, images, model, **settings)
+    response, metadata = await prompt_completion(request_msg, images, model, **settings)
     try:
         response = json.loads(response)
         response_type = type(response)
@@ -199,17 +199,4 @@ Please only output plain json.
             media_type="application/x-ndjson",
         )
     else:
-        return JSONResponse(
-            content={
-                "model": model,
-                "created_at": "2023-12-12T14:13:43.416799Z",
-                "message": {"role": "assistant", "content": original_response},
-                "done": True,
-                "total_duration": 5191566416,
-                "load_duration": 2154458,
-                "prompt_eval_count": 26,
-                "prompt_eval_duration": 383809000,
-                "eval_count": 298,
-                "eval_duration": 4799921000,
-            }
-        )
+        return assist_response(metadata, original_response)
