@@ -78,6 +78,7 @@ async def model_listing():
         model_id_mapping[model_name] = _id
     return model_id_mapping
 
+
 def parse_prompt_completion_response(response, model):
     content = response["completion"]["choices"][-1]["message"]["content"]
     response_id = response["completion"]["id"]
@@ -89,7 +90,11 @@ def parse_prompt_completion_response(response, model):
 
 
 async def prompt_completion(
-    msg: str, images=None, model: str = "openai/gpt-3.5-turbo-0125", temperature:float = None, max_tokens:float = None
+    msg: str,
+    images=None,
+    model: str = "openai/gpt-3.5-turbo-0125",
+    temperature: float = None,
+    max_tokens: float = None,
 ) -> str:
     # some  clients add :latest
     models = await get_model_mapping()
