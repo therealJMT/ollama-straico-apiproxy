@@ -8,7 +8,8 @@ logger = logging.getLogger(__name__)
 MODEL_SIZE = 7365960935
 
 from .response.stream.completion_response import generate_ollama_stream, response_stream
-from .response.basic.completion_response import assist_response
+from .response.basic.completion_response import assist_response, generate_response
+
 
 @app.post("/api/generate")
 async def ollamagenerate(request: Request):
@@ -28,21 +29,10 @@ async def ollamagenerate(request: Request):
         settings["max_tokens"] = options.get("max_tokens")
 
     if msg.get("stream") == False:
-        response = await prompt_completion(msg["prompt"], model=model, **settings)
-        return JSONResponse(
-            content={
-                "model": model,
-                "created_at": "2023-08-04T19:22:45.499127Z",
-                "response": response,
-                "done": True,
-                "total_duration": 10706818083,
-                "load_duration": 6338219291,
-                "prompt_eval_count": 26,
-                "prompt_eval_duration": 130079000,
-                "eval_count": 259,
-                "eval_duration": 4232710000,
-            }
+        response, metadata = await prompt_completion(
+            msg["prompt"], model=model, **settings
         )
+        return generate_response(metadata, response)
 
     return StreamingResponse(
         generate_ollama_stream(request_msg, model), media_type="application/x-ndjson"
@@ -147,25 +137,7 @@ Please only output plain json.
             response = response[0]
 
         if type(response) == dict and "tool_calls" in response:
-            return JSONResponse(
-                content={
-                    "model": model,
-                    "created_at": "2024-07-22T20:33:28.123648Z",
-                    "message": {
-                        "role": "assistant",
-                        "content": "",
-                        "tool_calls": response["tool_calls"],
-                    },
-                    "done_reason": "stop",
-                    "done": True,
-                    "total_duration": 885095291,
-                    "load_duration": 3753500,
-                    "prompt_eval_count": 122,
-                    "prompt_eval_duration": 328493000,
-                    "eval_count": 33,
-                    "eval_duration": 552222000,
-                }
-            )
+            return assist_response(metadata, tool_calls=response["tool_calls"])
 
     if len(messages) > 1 and response_type == str:
         response = response.strip()
