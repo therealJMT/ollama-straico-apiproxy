@@ -9,52 +9,30 @@ def json_stream_json_dump(obj):
     return json.dumps(obj) + "\n"
 
 
-async def response_stream(model, response, is_tool=False):
-    if is_tool:
-        pass
-    if is_tool:
+async def response_stream(metadata, response):
+    rs = response.split(" ")
+    for r in rs:
         yield json_stream_json_dump(
             {
-                "model": model,
+                "model": metadata["model"],
                 "created_at": "2023-12-12T14:13:43.416799Z",
-                "message": {"role": "assistant", "content": "", "tool_calls": response},
-                "done": False,
-                "total_duration": 5191566416,
-                "load_duration": 2154458,
-                "prompt_eval_count": 26,
-                "prompt_eval_duration": 383809000,
-                "eval_count": 298,
-                "eval_duration": 4799921000,
-            }
-        )
-    else:
-        yield json_stream_json_dump(
-            {
-                "model": model,
-                "created_at": "2023-12-12T14:13:43.416799Z",
-                "message": {"role": "assistant", "content": response},
-                "done": False,
-                "total_duration": 5191566416,
-                "load_duration": 2154458,
-                "prompt_eval_count": 26,
-                "prompt_eval_duration": 383809000,
-                "eval_count": 298,
-                "eval_duration": 4799921000,
+                "message": {"role": "assistant", "content": r},
+                "done": False
             }
         )
 
     yield json_stream_json_dump(
         {
-            "model": model,
+            "model": metadata["model"],
             "created_at": "2023-12-12T14:13:43.416799Z",
-            "message": {"role": "assistant", "content": ""},
-            "done_reason": "stop",
+            #"message": {"role": "assistant", "content": ""},
+            # "done_reason": "stop",
             "done": True,
             "total_duration": 5191566416,
             "load_duration": 2154458,
-            "prompt_eval_count": 26,
+            "prompt_eval_count": metadata["prompt_tokens"],
             "prompt_eval_duration": 383809000,
-            "eval_count": 298,
+            "eval_count": metadata["total_tokens"],
             "eval_duration": 4799921000,
         }
     )

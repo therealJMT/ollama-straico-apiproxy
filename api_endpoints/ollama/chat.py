@@ -167,7 +167,7 @@ Please only output plain json.
 
     if streaming:
         return StreamingResponse(
-            response_stream(model, original_response, is_tool=False),
+            response_stream(metadata, original_response),
             media_type="application/x-ndjson",
         )
     else:
